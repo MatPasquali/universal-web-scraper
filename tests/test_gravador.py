@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Gravador: roda o codegen do Playwright no Edge e devolve o script gravado."""
+import shutil
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -64,6 +66,43 @@ def test_gravar_sem_arquivo_e_sucesso(monkeypatch):
     monkeypatch.setattr(gravador.subprocess, "Popen", processo)
 
     assert gravador.gravar() == ""
+
+
+def test_pasta_temporaria_apagada_mesmo_com_arquivo_preso(monkeypatch):
+    """Logo após o taskkill o Windows ainda pode segurar o arquivo: insiste antes de desistir."""
+    processo, criados = falso_popen(FIXTURE)
+    falhas = []
+
+    def rmtree_teimoso(caminho):
+        if len(falhas) < 2:
+            falhas.append(caminho)
+            raise PermissionError("arquivo em uso")
+        shutil.rmtree(caminho)
+
+    monkeypatch.setattr(gravador.subprocess, "Popen", processo)
+    monkeypatch.setattr(gravador, "shutil", SimpleNamespace(rmtree=rmtree_teimoso))
+    monkeypatch.setattr(gravador.time, "sleep", lambda _segundos: None)
+
+    assert gravador.gravar() == FIXTURE
+    assert len(falhas) == 2
+    assert not criados[0].saida.parent.exists()
+
+
+def test_avisa_quando_nao_consegue_apagar(monkeypatch, capsys):
+    processo, criados = falso_popen(FIXTURE)
+
+    def rmtree_sempre_falha(caminho):
+        raise PermissionError("arquivo em uso")
+
+    monkeypatch.setattr(gravador.subprocess, "Popen", processo)
+    monkeypatch.setattr(gravador, "shutil", SimpleNamespace(rmtree=rmtree_sempre_falha))
+    monkeypatch.setattr(gravador.time, "sleep", lambda _segundos: None)
+    try:
+        assert gravador.gravar() == FIXTURE
+        aviso = capsys.readouterr().err
+        assert str(criados[0].saida.parent) in aviso and "senha" in aviso
+    finally:
+        shutil.rmtree(criados[0].saida.parent, ignore_errors=True)
 
 
 def test_ctrl_c_encerra_a_arvore_de_processos(monkeypatch):

@@ -83,12 +83,32 @@ def test_destino_renderizado():
     assert ns["DESTINO_DOWNLOAD_1"] == DESTINO
 
 
-def test_aguardar_rede_apos_clique_e_nao_apos_fill():
+def test_aguardar_rede_apos_clique_e_fill():
     codigo = gerar()
     assert linha_apos(codigo, "name='Entrar').click()") == "aguardar_rede(page)"
     assert linha_apos(codigo, "select_option('SP')") == "aguardar_rede(page)"
     assert linha_apos(codigo, "page.goto(") == "aguardar_rede(page)"
-    assert not linha_apos(codigo, "fill(credencial('COTACAO_SP_SENHA'))").startswith("aguardar_rede")
+    assert linha_apos(codigo, "fill('auto')") == "aguardar_rede(page)"  # busca que filtra enquanto digita
+
+
+def test_aguardar_rede_antes_do_download():
+    linhas = [l.strip() for l in gerar().splitlines() if l.strip()]
+    i = linhas.index("with page.expect_download() as download_info:")
+    assert linhas[i - 1] == "aguardar_rede(page)"
+
+
+def test_navegacao_automatica_vira_espera():
+    gravacao = analisar(ler("gravacao_postback.py"))
+    automaticas = {n.posicao for n in gravacao.navegacoes_apos_acao}
+    codigo = gerar_bot(gravacao, "legado", {}, {"download": DESTINO}, datetime(2026, 10, 14), automaticas)
+    gotos = [l.strip() for l in codigo.splitlines() if l.strip().startswith("page.goto(")]
+    assert gotos == ["page.goto('https://legado.exemplo.com/cotacao.aspx')"]  # só a primeira, digitada
+
+
+def test_navegacao_digitada_e_mantida():
+    gravacao = analisar(ler("gravacao_postback.py"))
+    codigo = gerar_bot(gravacao, "legado", {}, {"download": DESTINO}, datetime(2026, 10, 14))
+    assert len([l for l in codigo.splitlines() if l.strip().startswith("page.goto(")]) == 3
 
 
 def test_aguardar_rede_na_pagina_do_popup():

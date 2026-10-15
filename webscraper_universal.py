@@ -54,11 +54,17 @@ def ensinar_um_bot(raiz: Path, gravar=gravador.gravar) -> Path | None:
         )
         for i, download in enumerate(gravacao.downloads, 1)
     }
+    if not gravacao.downloads:
+        print(
+            "\nNenhum download apareceu na gravação. Se o bot baixar algum arquivo mesmo assim, "
+            f"ele vai para {raiz / 'downloads' / nome}."
+        )
+    automaticas = interface.confirmar_navegacoes(gravacao.navegacoes_apos_acao)
     while True:
         usados: set[str] = set()
         variaveis = {c.posicao: credenciais.nome_variavel(nome, c.rotulo, usados) for c in escolhidos}
         try:
-            codigo_bot = gerar_bot(gravacao, nome, variaveis, destinos, datetime.now())
+            codigo_bot = gerar_bot(gravacao, nome, variaveis, destinos, datetime.now(), automaticas)
             break
         except CredencialVazada as erro:
             print(f"\n{erro}")

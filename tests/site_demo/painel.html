@@ -7,19 +7,32 @@
     body { font-family: system-ui, sans-serif; margin: 2rem; }
     table { border-collapse: collapse; margin-top: 1rem; }
     td, th { border: 1px solid #999; padding: .3rem .6rem; }
+    p { margin: .6rem 0; }
   </style>
 </head>
 <body>
   <h1>Painel de cotações</h1>
-  <label for="local">Local</label>
-  <select id="local">
-    <option>Todos</option>
-    <option>SP</option>
-    <option>RJ</option>
-  </select>
-  <button id="filtrar" type="button">Filtrar</button>
-  <!-- De propósito o botão nunca fica desabilitado: exporta o que estiver na tela, como muitos sistemas reais. -->
-  <button id="exportar" type="button">Exportar CSV</button>
+  <p>
+    <label for="local">Local</label>
+    <select id="local">
+      <option>Todos</option>
+      <option>SP</option>
+      <option>RJ</option>
+    </select>
+    <button id="filtrar" type="button">Filtrar</button>
+    <!-- Janela de escolha que chama o painel e se fecha sozinha (padrão "lupa" de sistemas legados). -->
+    <button id="escolher" type="button">Escolher local</button>
+  </p>
+  <p>
+    <!-- Busca enquanto digita, sem botão: não há clique depois do qual esperar. -->
+    <input id="busca" placeholder="Buscar produto" autocomplete="off">
+  </p>
+  <p>
+    <!-- De propósito os botões nunca ficam desabilitados: exportam o que estiver na tela. -->
+    <button id="exportar" type="button">Exportar CSV</button>
+    <!-- Download que nasce numa janela nova, gerado pelo servidor. -->
+    <button id="exportar-janela" type="button">Exportar em nova janela</button>
+  </p>
   <p id="status" role="status">Carregando...</p>
   <table>
     <thead><tr><th>Local</th><th>Produto</th><th>Prêmio</th></tr></thead>
@@ -27,6 +40,12 @@
   </table>
   <script>
     let dados = [];
+    let busca = "";
+    let temporizador = null;
+
+    function filtros() {
+      return new URLSearchParams({ local: document.getElementById("local").value, produto: busca });
+    }
 
     function mostrar() {
       document.getElementById("linhas").innerHTML = dados
@@ -36,14 +55,25 @@
     }
 
     async function carregar(local) {
+      document.getElementById("local").value = local;
       document.getElementById("status").textContent = "Carregando...";
-      const resposta = await fetch("/api/cotacoes?local=" + encodeURIComponent(local));
+      const resposta = await fetch("/api/cotacoes?" + filtros());
       dados = await resposta.json();
       mostrar();
     }
 
     document.getElementById("filtrar").addEventListener("click", () => {
       carregar(document.getElementById("local").value);
+    });
+
+    document.getElementById("escolher").addEventListener("click", () => {
+      window.open("lupa.html", "lupa", "width=320,height=240");
+    });
+
+    document.getElementById("busca").addEventListener("input", (evento) => {
+      busca = evento.target.value;
+      clearTimeout(temporizador);
+      temporizador = setTimeout(() => carregar(document.getElementById("local").value), 300);
     });
 
     document.getElementById("exportar").addEventListener("click", () => {
@@ -55,6 +85,10 @@
       document.body.appendChild(link);
       link.click();
       link.remove();
+    });
+
+    document.getElementById("exportar-janela").addEventListener("click", () => {
+      window.open("/api/export.csv?" + filtros());
     });
 
     carregar("Todos");

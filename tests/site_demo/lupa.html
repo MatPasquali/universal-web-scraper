@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Escolher local</title>
+</head>
+<body>
+  <p>Escolha o local:</p>
+  <button type="button">SP</button>
+  <button type="button">RJ</button>
+  <script>
+    // Avisa o painel (que busca os dados) e se fecha sozinha.
+    for (const botao of document.querySelectorAll("button")) {
+      botao.addEventListener("click", () => {
+        window.opener.carregar(botao.textContent);
+        window.close();
+      });
+    }
+  </script>
+</body>
+</html>

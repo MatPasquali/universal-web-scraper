@@ -23,6 +23,7 @@ Saída: 0 = sucesso, 1 = falha em algum passo (detalhes e print da tela em logs/
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import re  # pode ser usado pelos passos gravados
@@ -41,10 +42,30 @@ TIMEOUT_MS = 60_000  # espera máxima por elemento, navegação ou download
 ESPERA_REDE_MS = 15_000  # espera máxima pela rede acalmar depois de cada ação
 VARIAVEIS_ENV = $variaveis_env
 $destinos
+DESTINO_PADRAO = RAIZ / "downloads" / NOME_BOT  # downloads que não estavam na gravação
 
 log = logging.getLogger(NOME_BOT)
 _pendentes: set = set()  # requisições de rede ainda em andamento
 _TIPOS_SEM_FIM = {"eventsource", "websocket"}  # conexões que ficam abertas de propósito
+_downloads: list = []  # todos os downloads que aconteceram
+_salvos: set = set()  # os que salvar_download já guardou
+
+
+class SemSegredos(logging.Formatter):
+    """Troca o valor das credenciais por *** em toda linha de log, inclusive nos erros do
+    Playwright, que repetem o texto digitado (ex.: fill("...") quando o campo não aceita)."""
+
+    def format(self, registro: logging.LogRecord) -> str:
+        texto = super().format(registro)
+        formas = {
+            forma
+            for nome in VARIAVEIS_ENV
+            if (valor := os.environ.get(nome))
+            for forma in (valor, json.dumps(valor)[1:-1], repr(valor)[1:-1])
+        }
+        for forma in sorted(formas, key=len, reverse=True):  # a mais longa primeiro: um usuário "joao"
+            texto = texto.replace(forma, "***")  # não pode estragar a troca da senha "joao123"
+        return texto
 
 
 def blindar_console() -> None:
@@ -59,7 +80,7 @@ def blindar_console() -> None:
 def configurar_log() -> None:
     pasta = RAIZ / "logs"
     pasta.mkdir(exist_ok=True)
-    formato = logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%d/%m/%Y %H:%M:%S")
+    formato = SemSegredos("%(asctime)s %(levelname)s %(message)s", "%d/%m/%Y %H:%M:%S")
     for handler in (logging.StreamHandler(), logging.FileHandler(pasta / f"{NOME_BOT}.log", encoding="utf-8")):
         handler.setFormatter(formato)
         log.addHandler(handler)
@@ -85,25 +106,59 @@ def rastrear_rede(context: BrowserContext) -> None:
 
 
 def aguardar_rede(pagina: Page) -> None:
-    """Espera a página parar de buscar dados (ex.: um filtro carregando). Nunca falha."""
-    try:
-        pagina.wait_for_timeout(250)  # dá tempo das requisições da ação começarem
-        limite = time.monotonic() + ESPERA_REDE_MS / 1000
-        quieta_desde = None
-        while time.monotonic() < limite:
-            if _pendentes:
-                quieta_desde = None
-            elif quieta_desde is None:
-                quieta_desde = time.monotonic()
-            elif time.monotonic() - quieta_desde >= 0.5:
-                return
-            pagina.wait_for_timeout(100)  # enquanto espera, o Playwright entrega os eventos de rede
-        log.info("A rede não acalmou em %d s; seguindo assim mesmo.", ESPERA_REDE_MS // 1000)
-    except PlaywrightError:
-        pass  # a própria ação fechou a página
+    """
+    Espera a página parar de buscar dados (ex.: um filtro carregando). Nunca falha.
+    Se a página fechou (ex.: janela de escolha que se fecha sozinha), espera pelas outras
+    janelas abertas, que podem ter começado a buscar dados.
+    """
+    contexto = pagina.context
+    inicio = time.monotonic()
+    quieta_desde = None
+    while time.monotonic() - inicio < ESPERA_REDE_MS / 1000:
+        viva = pagina if not pagina.is_closed() else next((p for p in contexto.pages if not p.is_closed()), None)
+        if viva is None:
+            return
+        try:
+            viva.wait_for_timeout(100)  # enquanto espera, o Playwright entrega os eventos de rede
+        except PlaywrightError:
+            time.sleep(0.05)  # a janela fechou durante a espera: tenta outra
+            continue
+        _podar_pendentes()
+        agora = time.monotonic()
+        if agora - inicio < 0.25:  # dá tempo das requisições da ação começarem
+            continue
+        if _pendentes:
+            quieta_desde = None
+        elif quieta_desde is None:
+            quieta_desde = agora
+        elif agora - quieta_desde >= 0.5:
+            return
+    log.info("A rede não acalmou em %d s; seguindo assim mesmo.", ESPERA_REDE_MS // 1000)
+
+
+def _podar_pendentes() -> None:
+    """Requisições de janelas que já fecharam nunca terminam: não podem segurar a espera."""
+    for requisicao in list(_pendentes):
+        try:
+            fechada = requisicao.frame.page.is_closed()
+        except PlaywrightError:  # ex.: requisição de service worker não tem janela
+            fechada = True
+        if fechada:
+            _pendentes.discard(requisicao)
+
+
+def rastrear_downloads(context: BrowserContext) -> None:
+    def anotar(download) -> None:
+        _downloads.append(download)
+
+    def nova_pagina(pagina) -> None:
+        pagina.on("download", anotar)
+
+    context.on("page", nova_pagina)
 
 
 def salvar_download(download: Download, destino: Path) -> Path:
+    _salvos.add(download)
     destino.mkdir(parents=True, exist_ok=True)
     arquivo = destino / download.suggested_filename
     if arquivo.exists():
@@ -115,6 +170,17 @@ def salvar_download(download: Download, destino: Path) -> Path:
 
 def executar_passos(context: BrowserContext) -> None:
 $passos
+
+
+def salvar_downloads_extras(context: BrowserContext) -> None:
+    """Downloads que o gravador não ligou a nenhuma ação (ex.: os que nascem numa janela nova)."""
+    vivas = [p for p in context.pages if not p.is_closed()]
+    if vivas:
+        aguardar_rede(vivas[0])  # um download disparado pelo último passo pode estar começando
+    for download in _downloads:
+        if download not in _salvos:
+            arquivo = salvar_download(download, DESTINO_PADRAO)
+            log.warning("Um download que não estava na gravação foi salvo em %s", arquivo)
 
 
 def salvar_prints(context: BrowserContext) -> None:
@@ -145,8 +211,10 @@ def main(argv: list[str] | None = None) -> int:
         context = browser.new_context(accept_downloads=True)
         context.set_default_timeout(TIMEOUT_MS)
         rastrear_rede(context)
+        rastrear_downloads(context)
         try:
             executar_passos(context)
+            salvar_downloads_extras(context)
         except Exception:
             log.exception("O bot falhou.")
             salvar_prints(context)

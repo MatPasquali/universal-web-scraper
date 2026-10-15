@@ -34,15 +34,31 @@ class Manipulador(SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:
         url = urlparse(self.path)
-        if url.path != "/api/cotacoes":
+        consulta = parse_qs(url.query)
+        local = consulta.get("local", ["Todos"])[0]
+        produto = consulta.get("produto", [""])[0].lower()
+        escolhidas = [
+            c for c in COTACOES if local in ("Todos", c["local"]) and produto in c["produto"].lower()
+        ]
+        if url.path == "/api/cotacoes":
+            time.sleep(ATRASO_S)
+            self._responder(json.dumps(escolhidas).encode("utf-8"), "application/json; charset=utf-8")
+        elif url.path == "/api/export.csv":
+            linhas = ["local;produto;premio", *(f"{c['local']};{c['produto']};{c['premio']}" for c in escolhidas)]
+            self._responder(
+                "\n".join(linhas).encode("utf-8"),
+                "text/csv; charset=utf-8",
+                {"Content-Disposition": 'attachment; filename="cotacoes_servidor.csv"'},
+            )
+        else:
             super().do_GET()
-            return
-        local = parse_qs(url.query).get("local", ["Todos"])[0]
-        time.sleep(ATRASO_S)
-        corpo = json.dumps([c for c in COTACOES if local in ("Todos", c["local"])]).encode("utf-8")
+
+    def _responder(self, corpo: bytes, tipo: str, extras: dict[str, str] | None = None) -> None:
         self.send_response(200)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Type", tipo)
         self.send_header("Content-Length", str(len(corpo)))
+        for nome, valor in (extras or {}).items():
+            self.send_header(nome, valor)
         self.end_headers()
         self.wfile.write(corpo)
 

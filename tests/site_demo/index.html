@@ -20,6 +20,11 @@
     <p id="erro" role="alert"></p>
   </form>
   <script>
+    // ?bloqueado=1 deixa a senha somente leitura: o fill da senha falha (teste de vazamento no log).
+    if (new URLSearchParams(location.search).has("bloqueado")) {
+      document.getElementById("senha").readOnly = true;
+    }
+
     document.getElementById("login").addEventListener("submit", (evento) => {
       evento.preventDefault();
       const usuario = document.getElementById("usuario").value;

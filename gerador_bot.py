@@ -6,7 +6,9 @@ Transformações nos passos (ver spec):
   - fill("<valor marcado como credencial>")  ->  fill(credencial("<VARIAVEL_DO_ENV>"))
   - dialog.dismiss()  ->  dialog.accept()  (o codegen sempre escreve dismiss)
   - log.info("Passo i/n") antes de cada passo
-  - salvar_download(...) depois de cada download e aguardar_rede(...) depois de cada ação interativa
+  - salvar_download(...) depois de cada download; aguardar_rede(...) depois de cada ação
+    interativa (fill incluído: busca que filtra enquanto digita) e antes de cada download
+  - goto que o sistema fez sozinho (postback) -> aguardar_rede(...), em vez de recarregar a página
 """
 
 from __future__ import annotations
@@ -15,14 +17,17 @@ import ast
 import copy
 import sys
 import textwrap
+from collections.abc import Collection
 from datetime import datetime
 from pathlib import Path
 from string import Template
 
-from analisador import Gravacao
+from analisador import Gravacao, pagina_da_acao
 
 MODELO = Path(__file__).resolve().parent / "modelo_bot.py.tpl"
-ACOES_INTERATIVAS = {"click", "dblclick", "press", "select_option", "check", "uncheck", "goto", "set_input_files"}
+ACOES_INTERATIVAS = {
+    "click", "dblclick", "fill", "press", "select_option", "check", "uncheck", "goto", "set_input_files",
+}
 TAMANHO_MINIMO_VAZAMENTO = 4  # valores menores dariam falso positivo em qualquer texto
 TAMANHO_MAXIMO_DESCRICAO = 120
 
@@ -41,8 +46,12 @@ def gerar_bot(
     variaveis: dict[tuple[int, int], str],
     destinos: dict[str, Path],
     gerado_em: datetime,
+    navegacoes_automaticas: Collection[tuple[int, int]] = frozenset(),
 ) -> str:
-    """Código-fonte completo de bots/<nome_bot>.py. `variaveis`: posição do campo -> variável do .env."""
+    """
+    Código-fonte completo de bots/<nome_bot>.py. `variaveis`: posição do campo -> variável do .env;
+    `navegacoes_automaticas`: posições dos gotos que o sistema fez sozinho (viram espera).
+    """
     marcados = [c for c in gravacao.campos if c.posicao in variaveis]
     valor_para_variavel = {c.valor: variaveis[c.posicao] for c in marcados}
     passos = [_TrocaCredenciais(valor_para_variavel).visit(copy.deepcopy(p)) for p in gravacao.passos]
@@ -57,7 +66,7 @@ def gerar_bot(
         python=sys.executable,
         variaveis_env=repr(tuple(nomes_env)),
         destinos=_constantes_destino(destinos, constantes),
-        passos=textwrap.indent(_montar_corpo(passos, constantes), "    "),
+        passos=textwrap.indent(_montar_corpo(passos, constantes, set(navegacoes_automaticas)), "    "),
     )
     try:
         compile(codigo, f"{nome_bot}.py", "exec")
@@ -113,20 +122,60 @@ def _checar_vazamento(passos: list[ast.stmt], marcados: list) -> None:
             )
 
 
-def _montar_corpo(passos: list[ast.stmt], constantes: dict[str, str]) -> str:
+def _montar_corpo(passos: list[ast.stmt], constantes: dict[str, str], automaticas: set[tuple[int, int]]) -> str:
     total = len(passos)
     linhas = []
     for i, passo in enumerate(passos, 1):
+        automatica = _navegacao_automatica(passo, automaticas)
+        if automatica is not None:
+            pagina, url = automatica
+            descricao = f"esperar a página recarregar (na gravação o sistema abriu {url} sozinho)"
+            linhas.append(f"log.info('Passo %d/%d: %s', {i}, {total}, {_encurtar(descricao)!r})")
+            linhas.append(f"aguardar_rede({pagina})")
+            continue
         codigo = ast.unparse(passo)
-        descricao = codigo.splitlines()[0]
-        if len(descricao) > TAMANHO_MAXIMO_DESCRICAO:
-            descricao = descricao[: TAMANHO_MAXIMO_DESCRICAO - 3] + "..."
-        linhas.append(f"log.info('Passo %d/%d: %s', {i}, {total}, {descricao!r})")
+        linhas.append(f"log.info('Passo %d/%d: %s', {i}, {total}, {_encurtar(codigo.splitlines()[0])!r})")
+        antes = _antes_do_passo(passo)
+        if antes:
+            linhas.append(antes)
         linhas.append(codigo)
         depois = _depois_do_passo(passo, constantes)
         if depois:
             linhas.append(depois)
     return "\n".join(linhas) or "pass"
+
+
+def _encurtar(texto: str) -> str:
+    if len(texto) > TAMANHO_MAXIMO_DESCRICAO:
+        return texto[: TAMANHO_MAXIMO_DESCRICAO - 3] + "..."
+    return texto
+
+
+def _navegacao_automatica(passo: ast.stmt, automaticas: set[tuple[int, int]]) -> tuple[str, str] | None:
+    """(página, url) se o passo é um goto que o sistema fez sozinho na gravação."""
+    if not (isinstance(passo, ast.Expr) and isinstance(passo.value, ast.Call)):
+        return None
+    chamada = passo.value
+    if (chamada.lineno, chamada.col_offset) not in automaticas:
+        return None
+    url = chamada.args[0].value if chamada.args and isinstance(chamada.args[0], ast.Constant) else ""
+    return pagina_da_acao(chamada), str(url)
+
+
+def _antes_do_passo(passo: ast.stmt) -> str:
+    """aguardar_rede antes de cada download: o que estiver carregando na tela vai para o arquivo."""
+    if isinstance(passo, ast.With):
+        for item in passo.items:
+            contexto = item.context_expr
+            if (
+                isinstance(contexto, ast.Call)
+                and isinstance(contexto.func, ast.Attribute)
+                and contexto.func.attr == "expect_download"
+            ):
+                pagina = pagina_da_acao(contexto)
+                if pagina:
+                    return f"aguardar_rede({pagina})"
+    return ""
 
 
 def _depois_do_passo(passo: ast.stmt, constantes: dict[str, str]) -> str:
@@ -147,18 +196,10 @@ def _depois_do_passo(passo: ast.stmt, constantes: dict[str, str]) -> str:
     if isinstance(passo, ast.Expr) and isinstance(passo.value, ast.Call):
         func = passo.value.func
         if isinstance(func, ast.Attribute) and func.attr in ACOES_INTERATIVAS:
-            raiz = _raiz(passo.value)
-            if raiz.startswith("page"):
-                return f"aguardar_rede({raiz})"
+            pagina = pagina_da_acao(passo.value)
+            if pagina:
+                return f"aguardar_rede({pagina})"
     return ""
-
-
-def _raiz(chamada: ast.Call) -> str:
-    """Nome da variável da página em que a ação acontece (page, page1, ...)."""
-    no: ast.AST = chamada.func
-    while isinstance(no, (ast.Attribute, ast.Call)):
-        no = no.value if isinstance(no, ast.Attribute) else no.func
-    return no.id if isinstance(no, ast.Name) else ""
 
 
 def _constantes_destino(destinos: dict[str, Path], constantes: dict[str, str]) -> str:

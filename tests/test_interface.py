@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 import interface
-from analisador import CampoDigitado
+from analisador import CampoDigitado, NavegacaoGravada
 
 CAMPOS = [
     CampoDigitado((10, 4), "Usuário", "joao.silva", True, False),
@@ -104,6 +104,26 @@ def test_pasta_seletor_cancelado(monkeypatch, digitado, esperado):
     roteiro(monkeypatch, [digitado])
     monkeypatch.setattr(interface, "_seletor_de_pasta", lambda titulo, inicial: "")
     assert interface.escolher_pasta("Destino", Path("X")) == esperado
+
+
+NAVEGACAO = NavegacaoGravada((11, 4), "page", "https://legado.exemplo.com/cotacao.aspx", "check em 'Somente SP'")
+
+
+def test_navegacao_automatica_por_padrao(monkeypatch, capsys):
+    roteiro(monkeypatch, [""])
+    assert interface.confirmar_navegacoes([NAVEGACAO]) == {(11, 4)}
+    saida = capsys.readouterr().out
+    assert "https://legado.exemplo.com/cotacao.aspx" in saida and "Somente SP" in saida
+
+
+def test_navegacao_digitada_continua(monkeypatch):
+    roteiro(monkeypatch, ["s"])
+    assert interface.confirmar_navegacoes([NAVEGACAO]) == set()
+
+
+def test_sem_navegacoes_nao_pergunta(monkeypatch):
+    roteiro(monkeypatch, [])
+    assert interface.confirmar_navegacoes([]) == set()
 
 
 def test_blindar_console_nao_falha():

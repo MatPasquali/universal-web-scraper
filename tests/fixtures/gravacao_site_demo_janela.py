@@ -1,0 +1,28 @@
+import re
+from playwright.sync_api import Playwright, sync_playwright, expect
+
+
+def run(playwright: Playwright) -> None:
+    browser = playwright.chromium.launch(channel="msedge", headless=False)
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("http://127.0.0.1:PORTA/")
+    page.get_by_label("Usuário").click()
+    page.get_by_label("Usuário").fill("demo")
+    page.get_by_label("Senha").click()
+    page.get_by_label("Senha").fill("demo123")
+    page.get_by_role("button", name="Entrar").click()
+    page.get_by_label("Local").select_option("SP")
+    page.get_by_role("button", name="Filtrar").click()
+    with page.expect_popup() as page1_info:
+        page.get_by_role("button", name="Exportar em nova janela").click()
+    page1 = page1_info.value
+    page1.close()
+
+    # ---------------------
+    context.close()
+    browser.close()
+
+
+with sync_playwright() as playwright:
+    run(playwright)

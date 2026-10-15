@@ -13,7 +13,7 @@ import sys
 import unicodedata
 from pathlib import Path
 
-from analisador import CampoDigitado
+from analisador import CampoDigitado, NavegacaoGravada
 
 NOME_VALIDO = re.compile(r"^[a-z][a-z0-9_]*$")
 
@@ -78,6 +78,21 @@ def escolher_credenciais(campos: list[CampoDigitado]) -> list[CampoDigitado]:
                 print(f"  Use números de 1 a {len(campos)}.")
                 continue
         return [campos[n - 1] for n in dict.fromkeys(escolhidos)]
+
+
+def confirmar_navegacoes(navegacoes: list[NavegacaoGravada]) -> set[tuple[int, int]]:
+    """
+    Para cada endereço gravado logo depois de uma ação, pergunta se a pessoa o digitou.
+    Devolve as posições dos que NÃO foram digitados: o bot troca esses por esperar a página.
+    """
+    automaticas = set()
+    for navegacao in navegacoes:
+        print(f"\nA gravação abre {navegacao.url}")
+        print(f"  logo depois de {navegacao.acao_anterior} na mesma página.")
+        print("  Normalmente é o próprio sistema recarregando a página, não algo que você digitou.")
+        if not perguntar_sim_nao("  Você digitou esse endereço na barra do Edge?", False):
+            automaticas.add(navegacao.posicao)
+    return automaticas
 
 
 def escolher_pasta(titulo: str, padrao: Path) -> Path:

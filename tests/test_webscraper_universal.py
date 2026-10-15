@@ -109,6 +109,27 @@ def test_credencial_vazada_pergunta_de_novo(monkeypatch, tmp_path, capsys):
     assert dotenv_values(tmp_path / ".env") == {"COTACAO_SP_USUARIO": "joao.silva"}
 
 
+def test_postback_vira_espera(monkeypatch, tmp_path):
+    gravacao = (FIXTURES / "gravacao_postback.py").read_text(encoding="utf-8")
+    # nome, pasta do download, 2 navegações automáticas (Enter = não digitei), ensinar outro? não
+    roteiro(monkeypatch, ["legado", "", "", "", "n"])
+
+    assert app.main(raiz=tmp_path, gravar=lambda: gravacao) == 0
+
+    codigo = (tmp_path / "bots" / "legado.py").read_text(encoding="utf-8")
+    gotos = [l.strip() for l in codigo.splitlines() if l.strip().startswith("page.goto(")]
+    assert gotos == ["page.goto('https://legado.exemplo.com/cotacao.aspx')"]
+
+
+def test_aviso_quando_nao_ha_download(monkeypatch, tmp_path, capsys):
+    gravacao = (FIXTURES / "gravacao_popup_iframe.py").read_text(encoding="utf-8")
+    roteiro(monkeypatch, ["portal", "", "n"])
+
+    assert app.main(raiz=tmp_path, gravar=lambda: gravacao) == 0
+
+    assert "Nenhum download apareceu" in capsys.readouterr().out
+
+
 def test_credencial_vazada_desistindo(monkeypatch, tmp_path):
     gravacao = GRAVACAO.replace("/login", "/login?senha=S3gr3d0!")
     roteiro(monkeypatch, ["cotacao_sp", "", "", "n", "n"])

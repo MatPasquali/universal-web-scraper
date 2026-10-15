@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import ast
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 PARECE_SENHA = re.compile(r"senha|password|passwd|\bpass\b|pwd", re.IGNORECASE)
 PARECE_CREDENCIAL = re.compile(r"usu[aá]rio|\buser|login|e-?mail|cpf|token", re.IGNORECASE)
@@ -47,10 +47,25 @@ class DownloadGravado:
 
 
 @dataclass(frozen=True)
+class NavegacaoGravada:
+    """
+    `page.goto()` gravado logo depois de uma ação na mesma página. Pode ter sido digitado na barra,
+    mas o codegen também grava assim o próprio sistema recarregando a página (postback depois de
+    check/select, ou navegação que demorou mais de 5 s) — e repetir o goto desfaz o que a ação fez.
+    """
+
+    posicao: tuple[int, int]
+    pagina: str
+    url: str
+    acao_anterior: str
+
+
+@dataclass(frozen=True)
 class Gravacao:
     passos: list[ast.stmt]
     campos: list[CampoDigitado]
     downloads: list[DownloadGravado]
+    navegacoes_apos_acao: list[NavegacaoGravada] = field(default_factory=list)
 
     @property
     def vazia(self) -> bool:
@@ -68,7 +83,20 @@ def analisar(codigo: str) -> Gravacao:
     if run is None:
         raise ErroGravacao("Não encontrei a função run() que o gravador do Playwright gera.")
     passos = [p for p in run.body if not _eh_boilerplate(p)]
-    return Gravacao(passos=passos, campos=_campos(passos), downloads=_downloads(passos))
+    return Gravacao(
+        passos=passos,
+        campos=_campos(passos),
+        downloads=_downloads(passos),
+        navegacoes_apos_acao=_navegacoes_apos_acao(passos),
+    )
+
+
+def pagina_da_acao(chamada: ast.Call) -> str:
+    """Variável da página em que a ação acontece (page, page1, ...); '' se a chamada não é de página."""
+    no: ast.AST = chamada.func
+    while isinstance(no, (ast.Attribute, ast.Call)):
+        no = no.value if isinstance(no, ast.Attribute) else no.func
+    return no.id if isinstance(no, ast.Name) and no.id.startswith("page") else ""
 
 
 def rotulo_do_alvo(chamada: ast.Call) -> str:
@@ -187,6 +215,35 @@ def _downloads(passos: list[ast.stmt]) -> list[DownloadGravado]:
                     )
                 )
     return achados
+
+
+def _navegacoes_apos_acao(passos: list[ast.stmt]) -> list[NavegacaoGravada]:
+    """Gotos de topo cuja página teve, por último, uma ação que não foi navegação."""
+    ultima_acao: dict[str, str] = {}  # página -> descrição da última ação (sem valores digitados)
+    achadas = []
+    for passo in passos:
+        acao = _acao_do_passo(passo)
+        pagina = pagina_da_acao(acao) if acao is not None else ""
+        if not pagina:
+            continue
+        metodo = acao.func.attr if isinstance(acao.func, ast.Attribute) else ""
+        if metodo == "goto":
+            url = _texto(acao.args[0]) if acao.args else ""
+            if isinstance(passo, ast.Expr) and url and pagina in ultima_acao:
+                achadas.append(NavegacaoGravada((acao.lineno, acao.col_offset), pagina, url, ultima_acao[pagina]))
+            ultima_acao.pop(pagina, None)
+        elif metodo not in ("once", "on"):
+            rotulo = rotulo_do_alvo(acao)
+            ultima_acao[pagina] = f"{metodo} em '{rotulo}'" if rotulo else metodo
+    return achadas
+
+
+def _acao_do_passo(passo: ast.stmt) -> ast.Call | None:
+    if isinstance(passo, ast.Expr) and isinstance(passo.value, ast.Call):
+        return passo.value
+    if isinstance(passo, ast.With):
+        return _primeira_acao(passo.body)
+    return None
 
 
 def _primeira_acao(corpo: list[ast.stmt]) -> ast.Call | None:

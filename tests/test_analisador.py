@@ -84,6 +84,23 @@ def test_rotulo_do_alvo_sem_localizador_reconhecido():
     assert rotulo_do_alvo(chamada) == ""
 
 
+def test_navegacoes_depois_de_acao():
+    """O codegen grava um goto sozinho quando a página recarrega depois de check/select (postback)."""
+    texto = ler("gravacao_postback.py")
+    g = analisar(texto)
+    assert [(n.pagina, n.url, n.acao_anterior) for n in g.navegacoes_apos_acao] == [
+        ("page", "https://legado.exemplo.com/cotacao.aspx", "check em 'Somente SP'"),
+        ("page", "https://legado.exemplo.com/cotacao.aspx", "select_option em 'Local'"),
+    ]
+    linha, coluna = g.navegacoes_apos_acao[0].posicao
+    assert texto.splitlines()[linha - 1][coluna:] == 'page.goto("https://legado.exemplo.com/cotacao.aspx")'
+
+
+def test_primeira_navegacao_de_cada_pagina_nao_e_suspeita():
+    assert analisar(ler("gravacao_login_download.py")).navegacoes_apos_acao == []
+    assert analisar(ler("gravacao_popup_iframe.py")).navegacoes_apos_acao == []
+
+
 def test_campo_sem_rotulo_vira_campo_n():
     texto = ler("gravacao_vazia.py").replace(
         "    page = context.new_page()\n",
