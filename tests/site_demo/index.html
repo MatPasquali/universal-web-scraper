@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Cotações - Login</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    form { display: grid; gap: .5rem; max-width: 18rem; }
+    #erro { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Sistema de Cotações (demo)</h1>
+  <form id="login">
+    <label for="usuario">Usuário</label>
+    <input id="usuario" name="usuario" autocomplete="off">
+    <label for="senha">Senha</label>
+    <input id="senha" name="senha" type="password">
+    <button type="submit">Entrar</button>
+    <p id="erro" role="alert"></p>
+  </form>
+  <script>
+    document.getElementById("login").addEventListener("submit", (evento) => {
+      evento.preventDefault();
+      const usuario = document.getElementById("usuario").value;
+      const senha = document.getElementById("senha").value;
+      if (usuario === "demo" && senha === "demo123") {
+        location.href = "painel.html";
+      } else {
+        document.getElementById("erro").textContent = "Usuário ou senha inválidos";
+      }
+    });
+  </script>
+</body>
+</html>

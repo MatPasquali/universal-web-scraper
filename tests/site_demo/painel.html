@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Cotações - Painel</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    table { border-collapse: collapse; margin-top: 1rem; }
+    td, th { border: 1px solid #999; padding: .3rem .6rem; }
+  </style>
+</head>
+<body>
+  <h1>Painel de cotações</h1>
+  <label for="local">Local</label>
+  <select id="local">
+    <option>Todos</option>
+    <option>SP</option>
+    <option>RJ</option>
+  </select>
+  <button id="filtrar" type="button">Filtrar</button>
+  <!-- De propósito o botão nunca fica desabilitado: exporta o que estiver na tela, como muitos sistemas reais. -->
+  <button id="exportar" type="button">Exportar CSV</button>
+  <p id="status" role="status">Carregando...</p>
+  <table>
+    <thead><tr><th>Local</th><th>Produto</th><th>Prêmio</th></tr></thead>
+    <tbody id="linhas"></tbody>
+  </table>
+  <script>
+    let dados = [];
+
+    function mostrar() {
+      document.getElementById("linhas").innerHTML = dados
+        .map((d) => `<tr><td>${d.local}</td><td>${d.produto}</td><td>${d.premio}</td></tr>`)
+        .join("");
+      document.getElementById("status").textContent = dados.length + " cotações";
+    }
+
+    async function carregar(local) {
+      document.getElementById("status").textContent = "Carregando...";
+      const resposta = await fetch("/api/cotacoes?local=" + encodeURIComponent(local));
+      dados = await resposta.json();
+      mostrar();
+    }
+
+    document.getElementById("filtrar").addEventListener("click", () => {
+      carregar(document.getElementById("local").value);
+    });
+
+    document.getElementById("exportar").addEventListener("click", () => {
+      if (!confirm("Exportar a base filtrada?")) return;
+      const linhas = ["local;produto;premio", ...dados.map((d) => [d.local, d.produto, d.premio].join(";"))];
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob([linhas.join("\n")], { type: "text/csv" }));
+      link.download = "cotacoes.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
+
+    carregar("Todos");
+  </script>
+</body>
+</html>
