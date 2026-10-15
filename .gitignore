@@ -1,0 +1,17 @@
+# Credenciais dos bots (senhas em texto puro)
+.env
+
+# Bots gerados: têm URLs e campos internos dos sistemas automatizados
+bots/*
+!bots/.gitkeep
+
+# Logs e prints de tela dos bots (podem mostrar dados do sistema)
+logs/
+downloads/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
