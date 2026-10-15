@@ -26,7 +26,7 @@ def test_remove_boilerplate_e_mantem_new_page():
 def test_campos_digitados_com_rotulo_e_sinais():
     g = analisar(ler("gravacao_login_download.py"))
     assert [(c.rotulo, c.valor, c.parece_credencial, c.parece_senha) for c in g.campos] == [
-        ("Usuário", "matheus.p", True, False),
+        ("Usuário", "joao.silva", True, False),
         ("Senha", "S3gr3d0!", True, True),
         ("Buscar produto", "auto", False, False),
     ]

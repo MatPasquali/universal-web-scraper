@@ -8,7 +8,7 @@ def run(playwright: Playwright) -> None:
     page = context.new_page()
     page.goto("https://cotacao.exemplo.com.br/login")
     page.get_by_role("textbox", name="Usuário").click()
-    page.get_by_role("textbox", name="Usuário").fill("matheus.p")
+    page.get_by_role("textbox", name="Usuário").fill("joao.silva")
     page.get_by_role("textbox", name="Senha").click()
     page.get_by_role("textbox", name="Senha").fill("S3gr3d0!")
     page.get_by_role("button", name="Entrar").click()

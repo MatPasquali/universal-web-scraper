@@ -46,7 +46,7 @@ def test_bot_compila_sem_avisos():
 def test_nenhuma_credencial_no_texto():
     codigo = gerar()
     assert "S3gr3d0!" not in codigo
-    assert "matheus.p" not in codigo
+    assert "joao.silva" not in codigo
 
 
 def test_usa_credencial_do_env():
@@ -133,7 +133,7 @@ def test_sem_credenciais_e_sem_downloads():
 
 def test_senha_em_url_gera_erro():
     texto = ler("gravacao_login_download.py").replace(
-        "https://cotacao.exemplo.com.br/login", "https://matheus.p:S3gr3d0!@cotacao.exemplo.com.br/login"
+        "https://cotacao.exemplo.com.br/login", "https://joao.silva:S3gr3d0!@cotacao.exemplo.com.br/login"
     )
     with pytest.raises(CredencialVazada) as erro:
         gerar(texto)

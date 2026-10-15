@@ -8,7 +8,7 @@ import interface
 from analisador import CampoDigitado
 
 CAMPOS = [
-    CampoDigitado((10, 4), "Usuário", "matheus.p", True, False),
+    CampoDigitado((10, 4), "Usuário", "joao.silva", True, False),
     CampoDigitado((12, 4), "Senha", "S3gr3d0!", True, True),
     CampoDigitado((15, 4), "Buscar produto", "auto", False, False),
 ]
@@ -71,7 +71,7 @@ def test_senha_mascarada(monkeypatch, capsys):
     interface.escolher_credenciais(CAMPOS)
     tela = capsys.readouterr().out + "".join(perguntas)
     assert "S3gr3d0!" not in tela
-    assert "matheus.p" in tela
+    assert "joao.silva" in tela
 
 
 def test_sem_campos_nao_pergunta(monkeypatch):

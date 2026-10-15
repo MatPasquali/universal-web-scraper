@@ -39,7 +39,7 @@ def test_um_bot_e_encerra(monkeypatch, tmp_path):
     assert "S3gr3d0!" not in codigo
     assert f"Path({str(tmp_path / 'downloads' / 'cotacao_sp')!r})" in codigo
     assert dotenv_values(tmp_path / ".env", interpolate=False) == {
-        "COTACAO_SP_USUARIO": "matheus.p",
+        "COTACAO_SP_USUARIO": "joao.silva",
         "COTACAO_SP_SENHA": "S3gr3d0!",
     }
 
@@ -106,7 +106,7 @@ def test_credencial_vazada_pergunta_de_novo(monkeypatch, tmp_path, capsys):
 
     assert "também aparece em outro ponto" in capsys.readouterr().out
     assert bots(tmp_path) == ["cotacao_sp.py"]
-    assert dotenv_values(tmp_path / ".env") == {"COTACAO_SP_USUARIO": "matheus.p"}
+    assert dotenv_values(tmp_path / ".env") == {"COTACAO_SP_USUARIO": "joao.silva"}
 
 
 def test_credencial_vazada_desistindo(monkeypatch, tmp_path):
