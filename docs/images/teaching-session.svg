@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="912" height="630" viewBox="0 0 912 630" role="img" aria-label="Terminal session teaching a bot">
+<rect width="912" height="630" rx="12" fill="#0d1117"/>
+<path d="M0 12 a12 12 0 0 1 12 -12 h888 a12 12 0 0 1 12 12 v24 h-912z" fill="#161b22"/>
+<circle cx="22" cy="18" r="6" fill="#ff5f56"/><circle cx="42" cy="18" r="6" fill="#ffbd2e"/><circle cx="62" cy="18" r="6" fill="#27c93f"/>
+<text x="456.0" y="23" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="13" fill="#8b949e">PowerShell</text>
+<g font-family="Consolas, 'Cascadia Mono', Menlo, monospace" font-size="14" xml:space="preserve" style="white-space: pre">
+<text x="24" y="58"><tspan fill="#79c0ff">PS C:\projects\universal-web-scraper&gt;</tspan><tspan fill="#f0f6fc"> python webscraper_universal.py</tspan></text>
+<text x="24" y="79" fill="#c9d1d9">Universal Web Scraper - ensine uma tarefa no Edge e ganhe um bot que a repete.</text>
+<text x="24" y="100" fill="#c9d1d9"></text>
+<text x="24" y="121"><tspan fill="#c9d1d9">Nome do novo bot (ex.: cotacao_sp): </tspan><tspan fill="#7ee787" font-weight="700">cotacao_sp</tspan></text>
+<text x="24" y="142" fill="#c9d1d9"></text>
+<text x="24" y="163" fill="#c9d1d9">Vou abrir o Microsoft Edge vazio para você ensinar a tarefa:</text>
+<text x="24" y="184" fill="#c9d1d9">  1. Digite o endereço do site na barra e faça a tarefa normalmente.</text>
+<text x="24" y="205" fill="#c9d1d9">  2. Se baixar arquivos, não precisa movê-los: no fim eu pergunto a pasta de destino.</text>
+<text x="24" y="226" fill="#c9d1d9">  3. Quando terminar, FECHE a janela do Edge.</text>
+<text x="24" y="247" fill="#c9d1d9">  (A janela "Playwright Inspector" mostra o código sendo gravado; pode ignorá-la.)</text>
+<text x="24" y="268" fill="#c9d1d9"></text>
+<text x="24" y="289" fill="#8b949e" font-style="italic"># Edge opens empty. You sign in, filter by SP, export the CSV and close the window.</text>
+<text x="24" y="310" fill="#c9d1d9"></text>
+<text x="24" y="331" fill="#c9d1d9">Campos digitados durante a gravação:</text>
+<text x="24" y="352" fill="#c9d1d9">  [1] Usuário: demo   &lt;- parece credencial</text>
+<text x="24" y="373" fill="#c9d1d9">  [2] Senha: (oculto, 7 caracteres)   &lt;- parece credencial</text>
+<text x="24" y="394" fill="#c9d1d9">Quais são credenciais (vão para o .env, fora do código)? Números separados por vírgula, 0 = nenhum [Enter =</text>
+<text x="24" y="415"><tspan fill="#c9d1d9">    1,2]: </tspan><tspan fill="#7ee787" font-weight="700">[Enter]</tspan></text>
+<text x="24" y="436" fill="#c9d1d9">  Pasta de destino do download #1 ("Exportar CSV"): C:\Reports\Cotacoes</text>
+<text x="24" y="457" fill="#c9d1d9"></text>
+<text x="24" y="478" fill="#f0f6fc" font-weight="700">Bot pronto: C:\projects\universal-web-scraper\bots\cotacao_sp.py</text>
+<text x="24" y="499" fill="#c9d1d9">  Rodar: python bots/cotacao_sp.py   (ou: python bots/cotacao_sp.py --headless)</text>
+<text x="24" y="520" fill="#c9d1d9">  Credenciais guardadas no .env: COTACAO_SP_USUARIO, COTACAO_SP_SENHA</text>
+<text x="24" y="541" fill="#c9d1d9"></text>
+<text x="24" y="562"><tspan fill="#c9d1d9">Ensinar um novo bot? [s/N] </tspan><tspan fill="#7ee787" font-weight="700">n</tspan></text>
+<text x="24" y="583" fill="#c9d1d9">Até a próxima!</text>
+</g></svg>
