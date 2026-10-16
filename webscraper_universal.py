@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Universal WebScrapping - ensine uma tarefa no Edge e ganhe um bot Python que a repete.
+Universal Web Scraper - ensine uma tarefa no Edge e ganhe um bot Python que a repete.
 
     python webscraper_universal.py
 
@@ -86,7 +86,7 @@ def ensinar_um_bot(raiz: Path, gravar=gravador.gravar) -> Path | None:
 
 def main(raiz: Path = RAIZ, gravar=gravador.gravar) -> int:
     interface.blindar_console()
-    print("Universal WebScrapping - ensine uma tarefa no Edge e ganhe um bot que a repete.\n")
+    print("Universal Web Scraper - ensine uma tarefa no Edge e ganhe um bot que a repete.\n")
     try:
         while True:
             try:

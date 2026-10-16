@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 r"""
-Bot "$nome_bot" - gerado pelo Universal WebScrapping em $gerado_em.
+Bot "$nome_bot" - gerado pelo Universal Web Scraper em $gerado_em.
 
 Repete no Microsoft Edge a tarefa que foi gravada.
 
@@ -195,7 +195,7 @@ def salvar_prints(context: BrowserContext) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=f"Bot {NOME_BOT} (Universal WebScrapping)")
+    parser = argparse.ArgumentParser(description=f"Bot {NOME_BOT} (Universal Web Scraper)")
     parser.add_argument("--headless", action="store_true", help="roda sem abrir a janela do Edge")
     args = parser.parse_args(argv)
     blindar_console()
