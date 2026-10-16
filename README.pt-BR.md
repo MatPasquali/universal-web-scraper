@@ -53,7 +53,7 @@ A sessão no terminal é curta. Esta é ela inteira:
 
 ## Teste no sistema demo
 
-O repositório traz um pequeno sistema de cotações falso, o mesmo que os testes usam. Ele tem login, um filtro que leva 1,5 segundo para carregar, um botão de exportar que nunca fica desabilitado, uma caixa de confirmação, uma busca que filtra enquanto você digita, uma janela de escolha que se fecha sozinha e uma exportação que abre numa janela nova.
+O repositório traz o Sistema de Uso, um pequeno sistema falso que os testes também usam. Ele tem login, um filtro que leva 1,5 segundo para carregar, um botão de exportar que nunca fica desabilitado, uma caixa de confirmação, uma busca que filtra enquanto você digita, uma janela de escolha que se fecha sozinha e uma exportação que abre numa janela nova.
 
 ```powershell
 python tests/site_demo/servidor.py    # http://127.0.0.1:8000, usuário demo, senha demo123
@@ -62,7 +62,7 @@ python tests/site_demo/servidor.py    # http://127.0.0.1:8000, usuário demo, se
 Em outro terminal, rode `python webscraper_universal.py`. Na janela vazia do Edge abra `127.0.0.1:8000`, faça login, escolha SP, clique em Filtrar, clique em Exportar CSV, aceite a confirmação e feche a janela.
 
 <p align="center">
-  <img src="docs/images/demo-dashboard.png" alt="Sistema de cotações demo filtrado por SP" width="820">
+  <img src="docs/images/demo-dashboard.png" alt="O sistema demo, Sistema de Uso, filtrado por SP" width="820">
 </p>
 
 ## Como é um bot gerado
@@ -76,11 +76,11 @@ def executar_passos(context: BrowserContext) -> None:
     aguardar_rede(page)
     page.get_by_label('Usuário').click()
     aguardar_rede(page)
-    page.get_by_label('Usuário').fill(credencial('COTACAO_SP_USUARIO'))
+    page.get_by_label('Usuário').fill(credencial('RELATORIO_SP_USUARIO'))
     aguardar_rede(page)
     page.get_by_label('Senha').click()
     aguardar_rede(page)
-    page.get_by_label('Senha').fill(credencial('COTACAO_SP_SENHA'))
+    page.get_by_label('Senha').fill(credencial('RELATORIO_SP_SENHA'))
     aguardar_rede(page)
     page.get_by_role('button', name='Entrar').click()
     aguardar_rede(page)
@@ -138,7 +138,7 @@ Quando o arquivo vem de uma janela que acabou de abrir, o codegen não liga o do
 
 ### Credenciais e o `.env`
 
-O `set_key` do python-dotenv só escapa aspas simples. Um valor terminado em barra invertida corrompe a linha seguinte do arquivo, e `\\` vira `\`. Cada valor é gravado na forma que o parser lê de volta sem mudança, e a ferramenta lê o arquivo de novo para conferir. Os bots carregam o `.env` com `interpolate=False`, então um `$` na senha continua sendo `$`.
+O `set_key` do python-dotenv 1.2.2 só escapa aspas simples, então um valor terminado em barra invertida corrompe a linha seguinte do arquivo e `\\` vira `\`. A versão 1.2.4 também escapa a barra. A ferramenta monta o valor entre aspas por conta própria e só pede ao `set_key` que grave, então o resultado é o mesmo nas duas versões; depois ela lê o arquivo de novo para conferir. Os bots carregam o `.env` com `interpolate=False`, então um `$` na senha continua sendo `$`.
 
 ### Senhas nos logs
 

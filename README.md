@@ -53,7 +53,7 @@ The command-line prompts, code comments and identifiers are in Brazilian Portugu
 
 ## Try it on the demo system
 
-The repository ships a small fake quotation system that the tests also use. It has a login, a filter that takes 1.5 seconds to load, an export button that is never disabled, a confirmation dialog, a search box that filters as you type, a pop-up picker that closes itself and an export that opens in a new window.
+The repository ships Sistema de Uso, a small fake system that the tests also use. It has a login, a filter that takes 1.5 seconds to load, an export button that is never disabled, a confirmation dialog, a search box that filters as you type, a pop-up picker that closes itself and an export that opens in a new window.
 
 ```powershell
 python tests/site_demo/servidor.py    # http://127.0.0.1:8000, user demo, password demo123
@@ -62,7 +62,7 @@ python tests/site_demo/servidor.py    # http://127.0.0.1:8000, user demo, passwo
 In a second terminal run `python webscraper_universal.py`. In the empty Edge window open `127.0.0.1:8000`, sign in, choose SP, click Filtrar, click Exportar CSV, accept the confirmation and close the window.
 
 <p align="center">
-  <img src="docs/images/demo-dashboard.png" alt="Demo quotation system filtered by SP" width="820">
+  <img src="docs/images/demo-dashboard.png" alt="The demo system, Sistema de Uso, filtered by SP" width="820">
 </p>
 
 ## What a generated bot looks like
@@ -76,11 +76,11 @@ def executar_passos(context: BrowserContext) -> None:
     aguardar_rede(page)
     page.get_by_label('Usuário').click()
     aguardar_rede(page)
-    page.get_by_label('Usuário').fill(credencial('COTACAO_SP_USUARIO'))
+    page.get_by_label('Usuário').fill(credencial('RELATORIO_SP_USUARIO'))
     aguardar_rede(page)
     page.get_by_label('Senha').click()
     aguardar_rede(page)
-    page.get_by_label('Senha').fill(credencial('COTACAO_SP_SENHA'))
+    page.get_by_label('Senha').fill(credencial('RELATORIO_SP_SENHA'))
     aguardar_rede(page)
     page.get_by_role('button', name='Entrar').click()
     aguardar_rede(page)
@@ -138,7 +138,7 @@ When a file comes from a window that has just opened, codegen does not attach th
 
 ### Credentials and `.env`
 
-`set_key` from python-dotenv only escapes single quotes. A value ending in a backslash corrupts the next line of the file, and `\\` turns into `\`. Each value is written in the form the parser reads back unchanged, and the tool reads the file again to confirm it. Bots load `.env` with `interpolate=False`, so a `$` in a password stays a `$`.
+`set_key` in python-dotenv 1.2.2 escapes only single quotes, so a value ending in a backslash corrupts the next line of the file and `\\` turns into `\`. Version 1.2.4 escapes backslashes as well. The tool builds the quoted value itself and only asks `set_key` to write it, so the result is the same on both versions, and then it reads the file back to confirm. Bots load `.env` with `interpolate=False`, so a `$` in a password stays a `$`.
 
 ### Secrets in logs
 

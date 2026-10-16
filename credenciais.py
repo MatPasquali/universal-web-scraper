@@ -2,10 +2,11 @@
 """
 Credenciais dos bots: nome das variáveis no .env e gravação segura dos valores.
 
-O set_key do python-dotenv só escapa aspas simples: um valor terminado em "\\" corromperia a
-linha seguinte do .env e "\\\\" viraria "\\". Por isso cada valor é escrito na forma que o parser
-lê de volta idêntico (sem aspas quando é seguro; senão entre aspas simples com a barra escapada),
-e a ida e volta é conferida depois de gravar. Mensagens de erro nunca mostram o valor.
+O set_key do python-dotenv muda de versão para versão (o 1.2.2 só escapa aspas simples, e aí um
+valor terminado em "\\" corromperia a linha seguinte; o 1.2.4 escapa também a barra). Por isso a
+forma gravada é montada aqui (sem aspas quando é seguro; senão entre aspas simples, com "\\" e "'"
+escapadas), o set_key só grava o texto, e a ida e volta é conferida depois de gravar.
+Mensagens de erro nunca mostram o valor.
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ class ErroCredencial(Exception):
 
 
 def nome_variavel(nome_bot: str, rotulo: str, usados: set[str]) -> str:
-    """<BOT>_<ROTULO> em maiúsculas ASCII (COTACAO_SP_SENHA). Registra o nome escolhido em `usados`."""
+    """<BOT>_<ROTULO> em maiúsculas ASCII (RELATORIO_SP_SENHA). Registra o nome escolhido em `usados`."""
     prefixo = nome_bot.upper()
     base = _maiusculas_ascii(rotulo)
     if base:
@@ -66,7 +67,10 @@ def _forma_no_env(chave: str, valor: str) -> tuple[str, str]:
             f"A credencial {chave} precisa de aspas e termina com barra invertida: o .env não consegue "
             "guardá-la sem alterar. Cadastre-a à mão como variável de ambiente do Windows."
         )
-    return valor.replace("\\", "\\\\"), "always"  # o set_key escapa as aspas simples
+    # As aspas são montadas aqui e o set_key só grava: o 1.2.2 escapa só "'" e o 1.2.4 escapa também
+    # "\\". Os dois parsers decodificam "\\\\" e "\\'" dentro de aspas simples.
+    escapado = valor.replace("\\", "\\\\").replace("'", "\\'")
+    return f"'{escapado}'", "never"
 
 
 def _maiusculas_ascii(texto: str) -> str:
