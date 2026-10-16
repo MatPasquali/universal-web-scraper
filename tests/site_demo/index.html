@@ -3,22 +3,23 @@
 <head>
   <meta charset="utf-8">
   <title>Cotações - Login</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; }
-    form { display: grid; gap: .5rem; max-width: 18rem; }
-    #erro { color: #b00020; }
-  </style>
+  <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-  <h1>Sistema de Cotações (demo)</h1>
-  <form id="login">
-    <label for="usuario">Usuário</label>
-    <input id="usuario" name="usuario" autocomplete="off">
-    <label for="senha">Senha</label>
-    <input id="senha" name="senha" type="password">
-    <button type="submit">Entrar</button>
-    <p id="erro" role="alert"></p>
-  </form>
+  <div class="topo"><strong>Sistema de Cotações</strong><span>ambiente de demonstração</span></div>
+  <main>
+    <div class="cartao login">
+      <h1>Entrar</h1>
+      <form id="login">
+        <label for="usuario">Usuário</label>
+        <input id="usuario" name="usuario" autocomplete="off">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password">
+        <button class="primario" type="submit">Entrar</button>
+        <p id="erro" role="alert"></p>
+      </form>
+    </div>
+  </main>
   <script>
     // ?bloqueado=1 deixa a senha somente leitura: o fill da senha falha (teste de vazamento no log).
     if (new URLSearchParams(location.search).has("bloqueado")) {

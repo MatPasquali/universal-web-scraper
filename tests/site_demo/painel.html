@@ -3,41 +3,40 @@
 <head>
   <meta charset="utf-8">
   <title>Cotações - Painel</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; }
-    table { border-collapse: collapse; margin-top: 1rem; }
-    td, th { border: 1px solid #999; padding: .3rem .6rem; }
-    p { margin: .6rem 0; }
-  </style>
+  <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-  <h1>Painel de cotações</h1>
-  <p>
-    <label for="local">Local</label>
-    <select id="local">
-      <option>Todos</option>
-      <option>SP</option>
-      <option>RJ</option>
-    </select>
-    <button id="filtrar" type="button">Filtrar</button>
-    <!-- Janela de escolha que chama o painel e se fecha sozinha (padrão "lupa" de sistemas legados). -->
-    <button id="escolher" type="button">Escolher local</button>
-  </p>
-  <p>
-    <!-- Busca enquanto digita, sem botão: não há clique depois do qual esperar. -->
-    <input id="busca" placeholder="Buscar produto" autocomplete="off">
-  </p>
-  <p>
-    <!-- De propósito os botões nunca ficam desabilitados: exportam o que estiver na tela. -->
-    <button id="exportar" type="button">Exportar CSV</button>
-    <!-- Download que nasce numa janela nova, gerado pelo servidor. -->
-    <button id="exportar-janela" type="button">Exportar em nova janela</button>
-  </p>
-  <p id="status" role="status">Carregando...</p>
-  <table>
-    <thead><tr><th>Local</th><th>Produto</th><th>Prêmio</th></tr></thead>
-    <tbody id="linhas"></tbody>
-  </table>
+  <div class="topo"><strong>Sistema de Cotações</strong><span>usuário: demo</span></div>
+  <main>
+    <div class="cartao">
+      <h1>Painel de cotações</h1>
+      <div class="barra">
+        <label for="local">Local</label>
+        <select id="local">
+          <option>Todos</option>
+          <option>SP</option>
+          <option>RJ</option>
+        </select>
+        <button id="filtrar" type="button">Filtrar</button>
+        <!-- Janela de escolha que chama o painel e se fecha sozinha (padrão "lupa" de sistemas legados). -->
+        <button id="escolher" type="button">Escolher local</button>
+        <!-- Busca enquanto digita, sem botão: não há clique depois do qual esperar. -->
+        <input id="busca" placeholder="Buscar produto" autocomplete="off">
+      </div>
+      <div class="barra">
+        <span class="espaco"></span>
+        <!-- De propósito os botões nunca ficam desabilitados: exportam o que estiver na tela. -->
+        <button class="primario" id="exportar" type="button">Exportar CSV</button>
+        <!-- Download que nasce numa janela nova, gerado pelo servidor. -->
+        <button id="exportar-janela" type="button">Exportar em nova janela</button>
+      </div>
+      <table>
+        <thead><tr><th>Local</th><th>Produto</th><th>Prêmio</th></tr></thead>
+        <tbody id="linhas"></tbody>
+      </table>
+      <p id="status" role="status">Carregando...</p>
+    </div>
+  </main>
   <script>
     let dados = [];
     let busca = "";
@@ -47,9 +46,13 @@
       return new URLSearchParams({ local: document.getElementById("local").value, produto: busca });
     }
 
+    function reais(valor) {
+      return Number(valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
     function mostrar() {
       document.getElementById("linhas").innerHTML = dados
-        .map((d) => `<tr><td>${d.local}</td><td>${d.produto}</td><td>${d.premio}</td></tr>`)
+        .map((d) => `<tr><td>${d.local}</td><td>${d.produto}</td><td>${reais(d.premio)}</td></tr>`)
         .join("");
       document.getElementById("status").textContent = dados.length + " cotações";
     }

@@ -3,11 +3,18 @@
 <head>
   <meta charset="utf-8">
   <title>Escolher local</title>
+  <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-  <p>Escolha o local:</p>
-  <button type="button">SP</button>
-  <button type="button">RJ</button>
+  <main>
+    <div class="cartao">
+      <h1>Escolha o local</h1>
+      <div class="barra">
+        <button type="button">SP</button>
+        <button type="button">RJ</button>
+      </div>
+    </div>
+  </main>
   <script>
     // Avisa o painel (que busca os dados) e se fecha sozinha.
     for (const botao of document.querySelectorAll("button")) {

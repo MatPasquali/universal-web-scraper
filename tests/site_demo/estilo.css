@@ -1,0 +1,88 @@
+:root {
+  --marca: #1f4e79;
+  --marca-escura: #163a5c;
+  --fundo: #f3f5f8;
+  --borda: #d8dee6;
+  --texto: #1d2733;
+  --suave: #5b6b7b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  background: var(--fundo);
+  color: var(--texto);
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  background: var(--marca);
+  color: #fff;
+}
+.topo strong { font-size: 17px; letter-spacing: .01em; }
+.topo span { opacity: .8; font-size: 13px; }
+
+main { max-width: 960px; margin: 32px auto; padding: 0 24px; }
+
+.cartao {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 24px 28px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, .06);
+}
+
+h1 { margin: 0 0 18px; font-size: 22px; font-weight: 600; }
+
+label { font-weight: 600; font-size: 13px; color: var(--suave); }
+
+input, select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--texto);
+}
+input:focus, select:focus { outline: 2px solid #9cc2e5; border-color: var(--marca); }
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--marca);
+  background: #fff;
+  color: var(--marca);
+  cursor: pointer;
+}
+button:hover { background: #eef4fa; }
+button.primario { background: var(--marca); color: #fff; }
+button.primario:hover { background: var(--marca-escura); }
+
+.login { max-width: 380px; margin: 72px auto; }
+.login form { display: grid; gap: 8px; }
+.login button { margin-top: 12px; }
+#erro { color: #b42318; min-height: 1.2em; margin: 4px 0 0; }
+
+.barra { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+.barra .espaco { flex: 1; }
+
+#status { color: var(--suave); font-size: 13px; margin: 14px 0 0; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--borda); }
+th {
+  background: #eef2f7;
+  color: var(--suave);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+td:last-child, th:last-child { text-align: right; }
