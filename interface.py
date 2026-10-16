@@ -28,14 +28,14 @@ def blindar_console() -> None:
 
 
 def slug(texto: str) -> str:
-    """Minúsculas, sem acento, só [a-z0-9_]: 'Cotação SP!' -> 'cotacao_sp'."""
+    """Minúsculas, sem acento, só [a-z0-9_]: 'Relatório SP!' -> 'relatorio_sp'."""
     ascii_ = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-z0-9]+", "_", ascii_.lower()).strip("_")
 
 
 def perguntar_nome_bot(pasta_bots: Path) -> str:
     while True:
-        bruto = input("Nome do novo bot (ex.: cotacao_sp): ")
+        bruto = input("Nome do novo bot (ex.: relatorio_sp): ")
         nome = slug(bruto)
         if not NOME_VALIDO.match(nome):
             print("  Use letras, números e _, começando com uma letra.")

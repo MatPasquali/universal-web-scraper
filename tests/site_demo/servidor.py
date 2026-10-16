@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Site de demonstração (sistema de cotações fictício) para testar e mostrar os bots.
+Site de demonstração: o Sistema de Uso, um sistema fictício para testar e mostrar os bots.
 
     python tests/site_demo/servidor.py [porta]     # padrão 8000 - usuário demo, senha demo123
 
-A busca de cotações demora ATRASO_S de propósito e o botão "Exportar CSV" fica sempre
+A busca de registros demora ATRASO_S de propósito e o botão "Exportar CSV" fica sempre
 habilitado: um bot que não espera a rede acalmar exporta a base errada.
 """
 
@@ -20,7 +20,7 @@ from urllib.parse import parse_qs, urlparse
 
 PASTA = Path(__file__).resolve().parent
 ATRASO_S = 1.5
-COTACOES = [
+REGISTROS = [
     {"local": "SP", "produto": "Auto", "premio": "1200.50"},
     {"local": "SP", "produto": "Residencial", "premio": "430.00"},
     {"local": "RJ", "produto": "Auto", "premio": "1350.90"},
@@ -38,9 +38,9 @@ class Manipulador(SimpleHTTPRequestHandler):
         local = consulta.get("local", ["Todos"])[0]
         produto = consulta.get("produto", [""])[0].lower()
         escolhidas = [
-            c for c in COTACOES if local in ("Todos", c["local"]) and produto in c["produto"].lower()
+            c for c in REGISTROS if local in ("Todos", c["local"]) and produto in c["produto"].lower()
         ]
-        if url.path == "/api/cotacoes":
+        if url.path == "/api/registros":
             time.sleep(ATRASO_S)
             self._responder(json.dumps(escolhidas).encode("utf-8"), "application/json; charset=utf-8")
         elif url.path == "/api/export.csv":
@@ -48,7 +48,7 @@ class Manipulador(SimpleHTTPRequestHandler):
             self._responder(
                 "\n".join(linhas).encode("utf-8"),
                 "text/csv; charset=utf-8",
-                {"Content-Disposition": 'attachment; filename="cotacoes_servidor.csv"'},
+                {"Content-Disposition": 'attachment; filename="registros_servidor.csv"'},
             )
         else:
             super().do_GET()

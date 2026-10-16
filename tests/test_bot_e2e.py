@@ -80,13 +80,13 @@ def rodar(bot: Path, cwd: Path) -> subprocess.CompletedProcess:
 
 def test_bot_gerado_baixa_base_filtrada(tmp_path, servidor_demo):
     raiz = tmp_path / "Projetos para Portfólio"
-    destino = tmp_path / "pasta com espaço" / "Cotações"
+    destino = tmp_path / "pasta com espaço" / "Relatórios"
     bot = preparar_bot(raiz, servidor_demo, destino)
 
     r = rodar(bot, tmp_path / "outro")  # roda de outro cwd: .env e logs vêm de Path(__file__)
 
     assert r.returncode == 0, r.stdout + r.stderr
-    linhas = (destino / "cotacoes.csv").read_text(encoding="utf-8").splitlines()
+    linhas = (destino / "registros.csv").read_text(encoding="utf-8").splitlines()
     assert linhas[0] == "local;produto;premio"
     assert len(linhas) > 1
     assert all(linha.startswith("SP;") for linha in linhas[1:])
@@ -103,7 +103,7 @@ def test_sem_espera_a_base_sai_errada(tmp_path, servidor_demo):
     r = rodar(bot, tmp_path / "outro")
 
     assert r.returncode == 0, r.stdout + r.stderr
-    linhas = (destino / "cotacoes.csv").read_text(encoding="utf-8").splitlines()
+    linhas = (destino / "registros.csv").read_text(encoding="utf-8").splitlines()
     assert linhas[1:] == [] or any(not linha.startswith("SP;") for linha in linhas[1:])
 
 
@@ -129,7 +129,7 @@ def test_busca_enquanto_digita_espera_o_filtro(tmp_path, servidor_demo):
     r = rodar(bot, tmp_path / "outro")
 
     assert r.returncode == 0, r.stdout + r.stderr
-    linhas = linhas_csv(destino / "cotacoes.csv")
+    linhas = linhas_csv(destino / "registros.csv")
     assert linhas and all(produto == "Auto" for _, produto, _ in linhas)
 
 
@@ -140,7 +140,7 @@ def test_janela_de_escolha_que_se_fecha(tmp_path, servidor_demo):
     r = rodar(bot, tmp_path / "outro")
 
     assert r.returncode == 0, r.stdout + r.stderr
-    linhas = linhas_csv(destino / "cotacoes.csv")
+    linhas = linhas_csv(destino / "registros.csv")
     assert linhas and all(local == "SP" for local, _, _ in linhas)
 
 
@@ -157,7 +157,7 @@ def test_espera_continua_quando_a_janela_fecha(tmp_path, servidor_demo):
     r = rodar(bot, tmp_path / "outro")
 
     assert r.returncode == 0, r.stdout + r.stderr
-    linhas = linhas_csv(destino / "cotacoes.csv")
+    linhas = linhas_csv(destino / "registros.csv")
     assert linhas and all(local == "SP" for local, _, _ in linhas)
 
 
@@ -169,7 +169,7 @@ def test_download_em_janela_nova_nao_se_perde(tmp_path, servidor_demo):
     r = rodar(bot, tmp_path / "outro")
 
     assert r.returncode == 0, r.stdout + r.stderr
-    arquivo = raiz / "downloads" / "demo" / "cotacoes_servidor.csv"
+    arquivo = raiz / "downloads" / "demo" / "registros_servidor.csv"
     linhas = linhas_csv(arquivo)
     assert linhas and all(local == "SP" for local, _, _ in linhas)
     assert "não estava na gravação" in (raiz / "logs" / "demo.log").read_text(encoding="utf-8")

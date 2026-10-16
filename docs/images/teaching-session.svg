@@ -7,7 +7,7 @@
 <text x="24" y="58"><tspan fill="#79c0ff">PS C:\projects\universal-web-scraper&gt;</tspan><tspan fill="#f0f6fc"> python webscraper_universal.py</tspan></text>
 <text x="24" y="79" fill="#c9d1d9">Universal Web Scraper - ensine uma tarefa no Edge e ganhe um bot que a repete.</text>
 <text x="24" y="100" fill="#c9d1d9"></text>
-<text x="24" y="121"><tspan fill="#c9d1d9">Nome do novo bot (ex.: cotacao_sp): </tspan><tspan fill="#7ee787" font-weight="700">cotacao_sp</tspan></text>
+<text x="24" y="121"><tspan fill="#c9d1d9">Nome do novo bot (ex.: relatorio_sp): </tspan><tspan fill="#7ee787" font-weight="700">relatorio_sp</tspan></text>
 <text x="24" y="142" fill="#c9d1d9"></text>
 <text x="24" y="163" fill="#c9d1d9">Vou abrir o Microsoft Edge vazio para você ensinar a tarefa:</text>
 <text x="24" y="184" fill="#c9d1d9">  1. Digite o endereço do site na barra e faça a tarefa normalmente.</text>
@@ -22,11 +22,11 @@
 <text x="24" y="373" fill="#c9d1d9">  [2] Senha: (oculto, 7 caracteres)   &lt;- parece credencial</text>
 <text x="24" y="394" fill="#c9d1d9">Quais são credenciais (vão para o .env, fora do código)? Números separados por vírgula, 0 = nenhum [Enter =</text>
 <text x="24" y="415"><tspan fill="#c9d1d9">    1,2]: </tspan><tspan fill="#7ee787" font-weight="700">[Enter]</tspan></text>
-<text x="24" y="436" fill="#c9d1d9">  Pasta de destino do download #1 ("Exportar CSV"): C:\Reports\Cotacoes</text>
+<text x="24" y="436" fill="#c9d1d9">  Pasta de destino do download #1 ("Exportar CSV"): C:\Reports\Relatorios</text>
 <text x="24" y="457" fill="#c9d1d9"></text>
-<text x="24" y="478" fill="#f0f6fc" font-weight="700">Bot pronto: C:\projects\universal-web-scraper\bots\cotacao_sp.py</text>
-<text x="24" y="499" fill="#c9d1d9">  Rodar: python bots/cotacao_sp.py   (ou: python bots/cotacao_sp.py --headless)</text>
-<text x="24" y="520" fill="#c9d1d9">  Credenciais guardadas no .env: COTACAO_SP_USUARIO, COTACAO_SP_SENHA</text>
+<text x="24" y="478" fill="#f0f6fc" font-weight="700">Bot pronto: C:\projects\universal-web-scraper\bots\relatorio_sp.py</text>
+<text x="24" y="499" fill="#c9d1d9">  Rodar: python bots/relatorio_sp.py   (ou: python bots/relatorio_sp.py --headless)</text>
+<text x="24" y="520" fill="#c9d1d9">  Credenciais guardadas no .env: RELATORIO_SP_USUARIO, RELATORIO_SP_SENHA</text>
 <text x="24" y="541" fill="#c9d1d9"></text>
 <text x="24" y="562"><tspan fill="#c9d1d9">Ensinar um novo bot? [s/N] </tspan><tspan fill="#7ee787" font-weight="700">n</tspan></text>
 <text x="24" y="583" fill="#c9d1d9">Até a próxima!</text>

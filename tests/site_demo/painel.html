@@ -2,14 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Cotações - Painel</title>
+  <title>Sistema de Uso - Painel</title>
   <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-  <div class="topo"><strong>Sistema de Cotações</strong><span>usuário: demo</span></div>
+  <div class="topo"><strong>Sistema de Uso</strong><span>usuário: demo</span></div>
   <main>
     <div class="cartao">
-      <h1>Painel de cotações</h1>
+      <h1>Painel de uso</h1>
       <div class="barra">
         <label for="local">Local</label>
         <select id="local">
@@ -54,13 +54,13 @@
       document.getElementById("linhas").innerHTML = dados
         .map((d) => `<tr><td>${d.local}</td><td>${d.produto}</td><td>${reais(d.premio)}</td></tr>`)
         .join("");
-      document.getElementById("status").textContent = dados.length + " cotações";
+      document.getElementById("status").textContent = dados.length + " registros";
     }
 
     async function carregar(local) {
       document.getElementById("local").value = local;
       document.getElementById("status").textContent = "Carregando...";
-      const resposta = await fetch("/api/cotacoes?" + filtros());
+      const resposta = await fetch("/api/registros?" + filtros());
       dados = await resposta.json();
       mostrar();
     }
@@ -84,7 +84,7 @@
       const linhas = ["local;produto;premio", ...dados.map((d) => [d.local, d.produto, d.premio].join(";"))];
       const link = document.createElement("a");
       link.href = URL.createObjectURL(new Blob([linhas.join("\n")], { type: "text/csv" }));
-      link.download = "cotacoes.csv";
+      link.download = "registros.csv";
       document.body.appendChild(link);
       link.click();
       link.remove();

@@ -28,7 +28,7 @@ def roteiro(monkeypatch, respostas):
 
 
 def test_slug():
-    assert interface.slug("Cotação SP!") == "cotacao_sp"
+    assert interface.slug("Relatório SP!") == "relatorio_sp"
     assert interface.slug("  Base--Mensal ") == "base_mensal"
     assert interface.slug("") == ""
 
